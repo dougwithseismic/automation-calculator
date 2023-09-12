@@ -85,7 +85,6 @@ const Calculator: React.FC = () => {
         getExamples: (value: number) => [
           `enough time for ${Math.floor(value * 1.5)} more sales calls`,
           `that's ${Math.floor(value / 2)} extra vacation days`,
-          `like ${Math.floor(value / 4)} months of work for one employee`,
           `that's ${Math.floor(value / 8)} extra workdays`,
           `that’s ${Math.floor(value / 4)} additional team-building sessions`,
 
