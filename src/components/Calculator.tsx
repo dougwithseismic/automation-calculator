@@ -56,9 +56,98 @@ const Calculator: React.FC = () => {
         description:
           "Cost of implementing the automation (one-time or monthly)",
         key: "implementationCost",
+        additional: (
+          <div className="label flex flex-col">
+            <select
+              name="implementationType"
+              className="w-fit my-4"
+              onChange={(e) => {
+                setParam("implementationType", e.target.value);
+                recalculate();
+              }}
+            >
+              <option value="one-time">One-Time Cost</option>
+              <option value="monthly">Monthly Retainer</option>
+            </select>
+          </div>
+        ),
       },
     ],
-    [params, currency]
+    [params, currency, recalculate, setParam]
+  );
+
+  const kpis = useMemo(
+    () => [
+      {
+        label: "Time Saved",
+        value: results.timeSaved,
+        unit: "hrs",
+        getExamples: (value: number) => [
+          `enough time for ${Math.floor(value * 1.5)} more sales calls`,
+          `that's ${Math.floor(value / 2)} extra vacation days`,
+          `like ${Math.floor(value / 4)} months of work for one employee`,
+          `that's ${Math.floor(value / 8)} extra workdays`,
+          `that’s ${Math.floor(value / 4)} additional team-building sessions`,
+
+          `enough time to read ${Math.floor(
+            value / 2
+          )} industry research papers`,
+        ],
+      },
+      {
+        label: "Wage Cost",
+        value: results.wageCost,
+        unit: currency,
+        getExamples: (value: number) => [
+          `you could hire a temp for ${Math.floor(value / 100)} days`,
+          `that’s enough to buy ${Math.floor(value / 30)} office chairs`,
+          `like sponsoring a small conference`,
+        ],
+      },
+      {
+        label: "Savings",
+        value: results.savings,
+        unit: currency,
+        getExamples: (value: number) => [
+          `that's ${Math.floor(value / 50)} team lunches`,
+          `or ${Math.floor(value / 1000)} new laptops`,
+          `equivalent to ${Math.floor(value / 300)} hours of consultancy`,
+        ],
+      },
+      {
+        label: "Annual Savings",
+        value: results.annualSavings,
+        unit: currency,
+        getExamples: (value: number) => [
+          `that's like getting a ${Math.floor(value / 12)} monthly bonus`,
+          `or funding a ${Math.floor(value / 30000)}-person team for a year`,
+          `enough to open a new office location`,
+        ],
+      },
+      {
+        label: "Net Savings",
+        value: results.netSavings,
+        unit: currency,
+        getExamples: (value: number) => [
+          `you could invest in ${Math.floor(
+            value / 500
+          )} hours of further automation`,
+          `that's ${Math.floor(value / 5000)} months of rent for a new office`,
+          `like acquiring a small company`,
+        ],
+      },
+      {
+        label: "ROI",
+        value: results.roi,
+        unit: "%",
+        getExamples: (value: number) => [
+          `that's a ${Math.floor(value / 10)}x multiplier on your investment`,
+          `like getting a ${Math.floor(value / 5)}% annual stock return`,
+          `equivalent to doubling your money ${Math.floor(value / 100)} times`,
+        ],
+      },
+    ],
+    [results, currency]
   );
 
   return (
@@ -87,6 +176,7 @@ const Calculator: React.FC = () => {
               }}
             />
             <small>{param.description}</small>
+            {param.additional}
           </div>
         ))}
         {/* Results */}
@@ -103,45 +193,24 @@ const Calculator: React.FC = () => {
         </div>
         <div className="mt-5 flex flex-col gap-4">
           <h2 className="text-xl font-bold mb-3">Results</h2>
-          <div>
-            Time Saved: {results.timeSaved.toLocaleString()} hrs
-            <span className="text-sm text-gray-500">
-              — enough time for {Math.floor(results.timeSaved / 0.5)} more sales
-              calls.
-            </span>
-          </div>
-          <div>
-            Wage Cost: {currency}
-            {results.wageCost.toLocaleString()}
-          </div>
-          <div>
-            Savings: {currency}
-            {results.savings.toLocaleString()}
-          </div>
-          <div>
-            Annual Savings: {currency}
-            {results.annualSavings.toLocaleString()}
-            <span className="text-sm text-gray-500">
-              — roughly equal to {Math.floor(results.annualSavings / 5000)}{" "}
-              months of an entry-level salary.
-            </span>
-          </div>
-          <div>
-            Net Savings: {currency}
-            {results.netSavings.toLocaleString()}
-            <span className="text-sm text-gray-500">
-              — thats like getting {Math.floor(results.netSavings / 100)} new
-              laptops.
-            </span>
-          </div>
-          <div>
-            ROI: {parseFloat(results.roi.toFixed(2)).toLocaleString()}%
-            <span className="text-sm text-gray-500">
-              — a ROI of {Math.floor(results.roi)}% is{" "}
-              {results.roi > 100 ? "excellent" : "good"}.
-            </span>
-          </div>
-        </div>{" "}
+          {kpis.map((kpi, index) => (
+            <div key={index}>
+              <div>
+                {kpi.label}: {kpi.unit}
+                {kpi.value.toLocaleString()}
+              </div>
+              <small>
+                {
+                  kpi.getExamples(kpi.value)[
+                    Math.floor(
+                      Math.random() * kpi.getExamples(kpi.value).length
+                    )
+                  ]
+                }
+              </small>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
