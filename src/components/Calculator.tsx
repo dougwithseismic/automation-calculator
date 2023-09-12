@@ -1,13 +1,66 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import useCalculator from "@/hooks/useCalculator";
-import { Heading, Slider, Text } from "@radix-ui/themes";
+import { Slider } from "@radix-ui/themes";
 
 const Calculator: React.FC = () => {
   const { results, setParam, recalculate, params } = useCalculator();
   const [currency, setCurrency] = useState<string>("$");
-  const [implementationType, _setImplementationType] =
-    useState<string>("one-time"); // 'one-time' or 'monthly'
+
+  const sliderParams = useMemo(
+    () => [
+      {
+        label: "Hours Per Task",
+        min: 1,
+        max: 40,
+        step: 1,
+        value: params.hoursPerTask,
+        description: "Hours spent on a single task",
+        key: "hoursPerTask",
+      },
+      {
+        label: "Tasks Per Month",
+        min: 2,
+        max: 100,
+        step: 2,
+        value: params.tasksPerMonth,
+        description: "Number of tasks per month for one employee",
+        key: "tasksPerMonth",
+      },
+      {
+        label: "Hourly Rate",
+        min: 1,
+        max: 200,
+        step: 1,
+        value: params.hourlyWage,
+        description: "An employees average hourly rate",
+        key: "hourlyWage",
+      },
+      {
+        label: "Number of Employees",
+        min: 1,
+        max: 50,
+        step: 1,
+        value: params.numEmployees,
+        description: "Number of employees doing the task monthly",
+        key: "numEmployees",
+      },
+      {
+        label: `Implementation Cost: ${currency}${parseFloat(
+          params.implementationCost.toFixed(2)
+        ).toLocaleString()}`,
+        min: 500,
+        max: 100000,
+        step: 500,
+        value: params.implementationCost,
+        description:
+          "Cost of implementing the automation (one-time or monthly)",
+        key: "implementationCost",
+      },
+    ],
+    [params, currency]
+  );
+
   return (
     <div className="p-4">
       <h1 className="text-4xl">How much should automation save you?</h1>
@@ -18,115 +71,26 @@ const Calculator: React.FC = () => {
 
       <div className="mb-4">
         {/* Hours Per Task Slider */}
-        <div className="input mb-4">
-          <label className="block mb-2">
-            Hours Per Task: {params.hoursPerTask}
-          </label>
-          <Slider
-          defaultValue={[4]}
-            min={1}
-            max={40}
-            step={1}
-            value={[params.hoursPerTask]}
-            onValueChange={(e) => {
-              setParam("hoursPerTask", e[0]);
-              recalculate();
-            }}
-          />
-          <small>Hours spent on a single task</small>
-        </div>
-
-        {/* Tasks Per Month Slider */}
-
-        <div className="input mb-4">
-          <label className="block mb-2">
-            Tasks Per Month: {params.tasksPerMonth}
-          </label>
-          <Slider
-            min={2}
-            max={100}
-            step={2}
-            value={[params.tasksPerMonth]}
-            onValueChange={(e) => {
-              setParam("tasksPerMonth", e[0]);
-              recalculate();
-            }}
-          />
-          <small>Number of tasks per month for one employee</small>
-        </div>
-
-        {/* Hourly Wage Slider */}
-        <div className="input mb-4">
-          <label className="block mb-2">Hourly Rate: {params.hourlyWage}</label>
-          <Slider
-            min={1}
-            max={200}
-            step={1}
-            value={[params.hourlyWage]}
-            onValueChange={(e) => {
-              setParam("hourlyWage", e[0]);
-              recalculate();
-            }}
-          />
-          <small>An employees average hourly rate</small>
-        </div>
-
-        {/* Number of Employees Slider */}
-        <div className="input mb-4">
-          <label className="block mb-2">
-            Number of Employees: {params.numEmployees}
-          </label>
-          <Slider
-            min={1}
-            max={50}
-            defaultValue={[5]}
-            step={1}
-            value={[params.numEmployees]}
-            onValueChange={(e) => {
-              setParam("numEmployees", e[0]);
-              recalculate();
-            }}
-          />{" "}
-          <small>Number of employees doing the task monthly</small>
-        </div>
-
-        {/* Implementation Cost Slider */}
-        <div className="input mb-4">
-          <label className="block mb-2">
-            Implementation Cost: {currency}
-            {parseFloat(params.implementationCost.toFixed(2)).toLocaleString()}
-          </label>
-          <Slider
-            defaultValue={[2500]}
-            min={500}
-            max={100000}
-            step={500}
-            value={[params.implementationCost]}
-            onValueChange={(e) => {
-              setParam("implementationCost", e[0]);
-              recalculate();
-            }}
-          />
-          <label className="label flex flex-col">
-            <small>
-              Cost of implementing the automation (one-time or monthly)
-            </small>
-            <select
-              className="w-fit my-4"
-              onChange={(e) => {
-                setParam("implementationType", e.target.value);
+        {sliderParams.map((param, index) => (
+          <div className="input mb-4" key={index}>
+            <label className="block mb-2">
+              {param.label}: {param.value}
+            </label>
+            <Slider
+              min={param.min}
+              max={param.max}
+              step={param.step}
+              value={[param.value]}
+              onValueChange={(e) => {
+                setParam(param.key as any, e[0]);
                 recalculate();
               }}
-            >
-              <option value="one-time">One-Time Cost</option>
-              <option value="monthly">Monthly Retainer</option>
-            </select>
-          </label>
-        </div>
-
+            />
+            <small>{param.description}</small>
+          </div>
+        ))}
         {/* Results */}
         {/* Results */}
-
         {/* Currency Dropdown */}
         <div className="mb-4">
           <label className="block mb-2">Select Currency: </label>
@@ -139,7 +103,13 @@ const Calculator: React.FC = () => {
         </div>
         <div className="mt-5 flex flex-col gap-4">
           <h2 className="text-xl font-bold mb-3">Results</h2>
-          <div>Time Saved: {results.timeSaved.toLocaleString()} hrs</div>
+          <div>
+            Time Saved: {results.timeSaved.toLocaleString()} hrs
+            <span className="text-sm text-gray-500">
+              — enough time for {Math.floor(results.timeSaved / 0.5)} more sales
+              calls.
+            </span>
+          </div>
           <div>
             Wage Cost: {currency}
             {results.wageCost.toLocaleString()}
@@ -151,13 +121,27 @@ const Calculator: React.FC = () => {
           <div>
             Annual Savings: {currency}
             {results.annualSavings.toLocaleString()}
+            <span className="text-sm text-gray-500">
+              — roughly equal to {Math.floor(results.annualSavings / 5000)}{" "}
+              months of an entry-level salary.
+            </span>
           </div>
           <div>
             Net Savings: {currency}
             {results.netSavings.toLocaleString()}
+            <span className="text-sm text-gray-500">
+              — thats like getting {Math.floor(results.netSavings / 100)} new
+              laptops.
+            </span>
           </div>
-          <div>ROI: {parseFloat(results.roi.toFixed(2)).toLocaleString()}%</div>
-        </div>
+          <div>
+            ROI: {parseFloat(results.roi.toFixed(2)).toLocaleString()}%
+            <span className="text-sm text-gray-500">
+              — a ROI of {Math.floor(results.roi)}% is{" "}
+              {results.roi > 100 ? "excellent" : "good"}.
+            </span>
+          </div>
+        </div>{" "}
       </div>
     </div>
   );

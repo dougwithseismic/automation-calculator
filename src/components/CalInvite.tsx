@@ -1,6 +1,7 @@
 "use client";
 // @ts-ignore
 import { getCalApi } from "@calcom/embed-react";
+import { Button } from "@radix-ui/themes";
 import { useEffect } from "react";
 
 function CalInvite() {
@@ -15,12 +16,12 @@ function CalInvite() {
     })();
   }, []);
   return (
-    <button
+    <Button 
       data-cal-link="dougwithseismic/30min"
       data-cal-config='{"layout":"month_view"}'
     >
-      Click me
-    </button>
+      Book a meeting
+    </Button>
   );
 }
 
